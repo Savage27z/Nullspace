@@ -67,7 +67,7 @@ export default function VaultDetailPage({
   const { id } = use(params)
   const v = VAULTS.find((x) => x.id === id) || VAULTS[0]
   const { address, isConnected } = useAccount()
-  const { data: connectorClient } = useConnectorClient()
+  const { data: connectorClient } = useConnectorClient({ query: { enabled: isConnected } })
   const { getWriteClient } = useCDRClient()
 
   const [unlocked, setUnlocked] = useState(false)

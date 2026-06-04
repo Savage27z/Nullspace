@@ -182,7 +182,7 @@ function ConditionConfig({
 export default function PublishPage() {
   const router = useRouter()
   const { address, isConnected } = useAccount()
-  const { data: connectorClient } = useConnectorClient()
+  const { data: connectorClient } = useConnectorClient({ query: { enabled: isConnected } })
   const { getWriteClient } = useCDRClient()
   const [step, setStep] = useState(1)
   const [file, setFile] = useState<string | null>(null)

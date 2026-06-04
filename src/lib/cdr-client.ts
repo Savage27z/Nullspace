@@ -9,8 +9,8 @@ import {
   encodeAbiParameters,
 } from "viem"
 
-const RPC_URL = "https://aeneid.storyrpc.io"
-const STORY_API_URL = "http://172.192.41.96:1317"
+const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://aeneid.storyrpc.io"
+const STORY_API_URL = process.env.NEXT_PUBLIC_STORY_API_URL || "http://172.192.41.96:1317"
 
 export const CDR_CONTRACTS = {
   DKG: "0xCcCcCC0000000000000000000000000000000004" as const,
