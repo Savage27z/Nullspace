@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Fragment, useCallback } from "react"
+import { useState, Fragment, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAccount, useConnectorClient } from "wagmi"
 import { CONDITION_TYPES } from "@/lib/mock-data"
@@ -186,7 +186,21 @@ export default function PublishPage() {
   const { getWriteClient } = useCDRClient()
   const [step, setStep] = useState(1)
   const [file, setFile] = useState<string | null>(null)
+  const [fileSize, setFileSize] = useState<string | null>(null)
   const [dragging, setDragging] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  function formatFileSize(bytes: number) {
+    if (bytes >= 1e9) return (bytes / 1e9).toFixed(1) + " GB"
+    if (bytes >= 1e6) return (bytes / 1e6).toFixed(1) + " MB"
+    if (bytes >= 1e3) return (bytes / 1e3).toFixed(1) + " KB"
+    return bytes + " B"
+  }
+
+  function handleFile(f: File) {
+    setFile(f.name)
+    setFileSize(formatFileSize(f.size))
+  }
   const [name, setName] = useState("")
   const [desc, setDesc] = useState("")
   const [category, setCategory] = useState("Medical")
@@ -315,6 +329,16 @@ export default function PublishPage() {
       {step === 1 && (
         <div className="step-pane">
           {/* TODO: CDR SDK — encrypt file with CDR DataProtector */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,.parquet,.json,.enc,.tsv,.xlsx"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) handleFile(f)
+            }}
+          />
           <div
             className={
               "dropzone" +
@@ -329,12 +353,10 @@ export default function PublishPage() {
             onDrop={(e) => {
               e.preventDefault()
               setDragging(false)
-              setFile(
-                e.dataTransfer.files[0]?.name ||
-                  "patients_genome_v7.csv.enc"
-              )
+              const f = e.dataTransfer.files[0]
+              if (f) handleFile(f)
             }}
-            onClick={() => setFile("patients_genome_v7.csv.enc")}
+            onClick={() => fileInputRef.current?.click()}
           >
             {file ? <FileIcon size={26} /> : <UploadIcon size={26} />}
             <div className="dropzone__title">
@@ -342,8 +364,8 @@ export default function PublishPage() {
             </div>
             <div className="dropzone__sub mono">
               {file
-                ? "4.2 GB · client-side encrypted · ready"
-                : "CSV / Parquet · encrypted client-side"}
+                ? `${fileSize} · client-side encrypted · ready`
+                : "CSV / Parquet / JSON · click or drag to upload"}
             </div>
           </div>
 
