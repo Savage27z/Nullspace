@@ -2,7 +2,7 @@
 
 import { useState, Fragment, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { useAccount, useConnectorClient } from "wagmi"
+import { useAccount, useConnect, useConnectorClient } from "wagmi"
 import { CONDITION_TYPES } from "@/lib/mock-data"
 import { useCDRClient, createVault } from "@/lib/cdr-client"
 import { useUserVaults } from "@/lib/vault-store"
@@ -183,6 +183,7 @@ function ConditionConfig({
 export default function PublishPage() {
   const router = useRouter()
   const { address, isConnected } = useAccount()
+  const { connect, connectors } = useConnect()
   const { data: connectorClient } = useConnectorClient({ query: { enabled: isConnected } })
   const { getWriteClient } = useCDRClient()
   const { addVault } = useUserVaults()
@@ -592,8 +593,15 @@ export default function PublishPage() {
 
           <button
             className="btn btn--primary btn--block btn--lg"
-            onClick={publish}
-            disabled={publishing || !isConnected}
+            onClick={() => {
+              if (!isConnected) {
+                const connector = connectors[0]
+                if (connector) connect({ connector })
+              } else {
+                publish()
+              }
+            }}
+            disabled={publishing}
             style={{ marginTop: 20 }}
           >
             {publishing ? pubStatus || "Publishing…" : !isConnected ? "Connect Wallet" : "Publish to CDR"}

@@ -100,7 +100,7 @@ export default function Topbar() {
 
   return (
     <header className="topnav">
-      <Link href="/" className="topnav__left">
+      <Link href="/marketplace" className="topnav__left">
         <div className="topnav__mark"></div>
         <span className="topnav__brand">Nullspace</span>
       </Link>

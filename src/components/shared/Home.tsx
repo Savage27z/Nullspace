@@ -37,8 +37,8 @@ export default function Home() {
           <span className="hm-nav__name">Nullspace</span>
         </div>
         <div className="hm-nav__right">
-          <span className="hm-nav__link mono">Docs</span>
-          <span className="hm-nav__link mono">GitHub</span>
+          <a href="https://github.com/Savage27z/Nullspace#readme" target="_blank" rel="noopener noreferrer" className="hm-nav__link mono">Docs</a>
+          <a href="https://github.com/Savage27z/Nullspace" target="_blank" rel="noopener noreferrer" className="hm-nav__link mono">GitHub</a>
           <button className="hm-nav__connect" onClick={enter}>
             <span className="pulse" style={{ width: 5, height: 5 }}></span>
             Launch App

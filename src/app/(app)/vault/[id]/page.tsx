@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react"
 import { use } from "react"
 import Link from "next/link"
-import { useAccount, useConnectorClient } from "wagmi"
+import { useAccount, useConnect, useConnectorClient } from "wagmi"
 import { VAULTS, CONDITION_TYPES, queryHistoryFor } from "@/lib/mock-data"
 import { useCDRClient, accessVault } from "@/lib/cdr-client"
 import { useUserVaults } from "@/lib/vault-store"
@@ -69,6 +69,7 @@ export default function VaultDetailPage({
   const { vaults: userVaults } = useUserVaults()
   const v = VAULTS.find((x) => x.id === id) || userVaults.find((x) => x.id === id) || VAULTS[0]
   const { address, isConnected } = useAccount()
+  const { connect, connectors } = useConnect()
   const { data: connectorClient } = useConnectorClient({ query: { enabled: isConnected } })
   const { getWriteClient } = useCDRClient()
 
@@ -302,8 +303,15 @@ export default function VaultDetailPage({
 
             <button
               className="btn btn--primary btn--block btn--lg"
-              onClick={unlock}
-              disabled={unlocked || running || !isConnected}
+              onClick={() => {
+                if (!isConnected) {
+                  const connector = connectors[0]
+                  if (connector) connect({ connector })
+                } else {
+                  unlock()
+                }
+              }}
+              disabled={unlocked || running}
             >
               {running
                 ? status || "Processing…"
@@ -462,10 +470,18 @@ hash: 0x4f9a…c012`}</pre>
                     {h.hash}
                   </td>
                   <td style={{ padding: "10px 16px" }}>
-                    <ExternalIcon
-                      size={14}
-                      style={{ color: "var(--text-3)" }}
-                    />
+                    <a
+                      href={`https://aeneid.storyscan.xyz`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ display: "inline-flex" }}
+                    >
+                      <ExternalIcon
+                        size={14}
+                        style={{ color: "var(--text-3)" }}
+                      />
+                    </a>
                   </td>
                 </tr>
               ))}
