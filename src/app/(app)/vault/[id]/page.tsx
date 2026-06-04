@@ -77,8 +77,9 @@ export default function VaultDetailPage({
   const [status, setStatus] = useState("")
   const [txHash, setTxHash] = useState<string | null>(null)
   const [decryptedData, setDecryptedData] = useState<string | null>(null)
+  const col = v.schema[1] || v.schema[0] || "column"
   const [query, setQuery] = useState(
-    `SELECT ${v.schema[1]}, COUNT(*)\nFROM vault\nGROUP BY ${v.schema[1]}\nORDER BY 2 DESC\nLIMIT 20;`
+    `SELECT ${col}, COUNT(*)\nFROM vault\nGROUP BY ${col}\nORDER BY 2 DESC\nLIMIT 20;`
   )
 
   const condState: Record<string, boolean> = {
