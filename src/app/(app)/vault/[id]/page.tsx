@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useAccount, useConnectorClient } from "wagmi"
 import { VAULTS, CONDITION_TYPES, queryHistoryFor } from "@/lib/mock-data"
 import { useCDRClient, accessVault } from "@/lib/cdr-client"
+import { useUserVaults } from "@/lib/vault-store"
 import { fmt, truncAddr } from "@/lib/utils"
 import VaultArt from "@/components/shared/VaultArt"
 import {
@@ -65,7 +66,8 @@ export default function VaultDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = use(params)
-  const v = VAULTS.find((x) => x.id === id) || VAULTS[0]
+  const { vaults: userVaults } = useUserVaults()
+  const v = VAULTS.find((x) => x.id === id) || userVaults.find((x) => x.id === id) || VAULTS[0]
   const { address, isConnected } = useAccount()
   const { data: connectorClient } = useConnectorClient({ query: { enabled: isConnected } })
   const { getWriteClient } = useCDRClient()

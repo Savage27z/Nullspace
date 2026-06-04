@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { MY_VAULTS } from "@/lib/mock-data"
+import { useUserVaults } from "@/lib/vault-store"
 import { fmt } from "@/lib/utils"
 import VaultArt from "@/components/shared/VaultArt"
 import { PlusIcon, PauseIcon, RenewIcon } from "@/components/shared/Icons"
@@ -19,12 +20,11 @@ function StatusBadge({ status }: { status: VaultStatus }) {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const mine = MY_VAULTS
+  const { vaults: userVaults } = useUserVaults()
+  const mine = [...userVaults, ...MY_VAULTS]
   const published = mine.length
   const earnings = mine.reduce((s, v) => s + v.earnings, 0)
   const queries = mine.reduce((s, v) => s + v.queries, 0)
-
-  // TODO: CDR SDK — pause/renew/delete vault on-chain
 
   return (
     <div className="fade-in dashboard">

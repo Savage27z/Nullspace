@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import Link from "next/link"
 import { VAULTS, CATEGORIES, SORTS } from "@/lib/mock-data"
+import { useUserVaults } from "@/lib/vault-store"
 import { fmt } from "@/lib/utils"
 import VaultArt from "@/components/shared/VaultArt"
 import { ChevronIcon, CheckIcon } from "@/components/shared/Icons"
@@ -86,18 +87,20 @@ function Dropdown({
 export default function MarketplacePage() {
   const [cat, setCat] = useState("All")
   const [sort, setSort] = useState("Newest")
+  const { vaults: userVaults } = useUserVaults()
 
-  const totalVaults = VAULTS.length
+  const allVaults = useMemo(() => [...userVaults, ...VAULTS], [userVaults])
+  const totalVaults = allVaults.length
   const queriesToday = 1426
-  const totalVolume = VAULTS.reduce((s, v) => s + v.earnings, 0)
+  const totalVolume = allVaults.reduce((s, v) => s + v.earnings, 0)
 
   const filtered = useMemo(() => {
-    let list = VAULTS.filter((v) => cat === "All" || v.category === cat)
+    let list = allVaults.filter((v) => cat === "All" || v.category === cat)
     if (sort === "Price") list = [...list].sort((a, b) => b.price - a.price)
     else if (sort === "Most Queried")
       list = [...list].sort((a, b) => b.queries - a.queries)
     return list
-  }, [cat, sort])
+  }, [cat, sort, allVaults])
 
   return (
     <div className="fade-in">
