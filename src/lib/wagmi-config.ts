@@ -17,12 +17,9 @@ export const storyAeneid = defineChain({
 
 export const config = createConfig({
   chains: [storyAeneid],
-  connectors: [
-    // Multi-injected provider discovery: MetaMask, Rabby, Zerion, Coinbase, Brave, etc.
-    // Each wallet that implements EIP-6963 is auto-detected
-    injected(),
-  ],
+  connectors: [injected()],
   multiInjectedProviderDiscovery: true,
+  ssr: true,
   storage: createStorage({ storage: typeof window !== "undefined" ? window.localStorage : undefined }),
   transports: {
     [storyAeneid.id]: http(),

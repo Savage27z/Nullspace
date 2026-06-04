@@ -313,7 +313,7 @@ export default function PublishPage() {
 
       setPublished(true)
     }
-  }, [isConnected, connectorClient, address, name, category, desc, file, cfg, conds, getWriteClient])
+  }, [isConnected, connectorClient, address, name, category, desc, file, cfg, conds, getWriteClient, addVault])
 
   if (published)
     return (
