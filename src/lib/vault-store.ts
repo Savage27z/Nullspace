@@ -44,6 +44,13 @@ export function useUserVaults() {
     setVaults(updated)
   }, [])
 
+  const updateVault = useCallback((id: string, patch: Partial<Vault>) => {
+    const current = readVaults()
+    const updated = current.map((v) => (v.id === id ? { ...v, ...patch } : v))
+    writeVaults(updated)
+    setVaults(updated)
+  }, [])
+
   const removeVault = useCallback((id: string) => {
     const current = readVaults()
     const updated = current.filter((v) => v.id !== id)
@@ -51,5 +58,5 @@ export function useUserVaults() {
     setVaults(updated)
   }, [])
 
-  return { vaults, addVault, removeVault }
+  return { vaults, addVault, updateVault, removeVault }
 }

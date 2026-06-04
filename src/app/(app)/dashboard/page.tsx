@@ -7,7 +7,7 @@ import { useUserVaults } from "@/lib/vault-store"
 import { fmt } from "@/lib/utils"
 import VaultArt from "@/components/shared/VaultArt"
 import { PlusIcon, PauseIcon, RenewIcon } from "@/components/shared/Icons"
-import type { VaultStatus } from "@/types"
+import type { Vault, VaultStatus } from "@/types"
 
 function StatusBadge({ status }: { status: VaultStatus }) {
   const map: Record<VaultStatus, string> = {
@@ -20,11 +20,42 @@ function StatusBadge({ status }: { status: VaultStatus }) {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const { vaults: userVaults } = useUserVaults()
-  const mine = [...userVaults, ...MY_VAULTS]
+  const { vaults: userVaults, addVault, updateVault } = useUserVaults()
+
+  // Merge user vaults (from store) with mock vaults
+  // Mock vaults that aren't in the store yet get shown as-is
+  const mockIds = new Set(userVaults.map((v) => v.id))
+  const mockVaults = MY_VAULTS.filter((v) => !mockIds.has(v.id))
+  const mine = [...userVaults, ...mockVaults]
+
   const published = mine.length
   const earnings = mine.reduce((s, v) => s + v.earnings, 0)
   const queries = mine.reduce((s, v) => s + v.queries, 0)
+
+  function handlePause(e: React.MouseEvent, v: Vault) {
+    e.preventDefault()
+    e.stopPropagation()
+    const newStatus: VaultStatus = v.status === "paused" ? "active" : "paused"
+
+    // If it's a mock vault not yet in store, copy it in first
+    if (!userVaults.find((uv) => uv.id === v.id)) {
+      addVault({ ...v, status: newStatus })
+    } else {
+      updateVault(v.id, { status: newStatus })
+    }
+  }
+
+  function handleRenew(e: React.MouseEvent, v: Vault) {
+    e.preventDefault()
+    e.stopPropagation()
+    const patch = { status: "active" as VaultStatus, lastQueried: "just now" }
+
+    if (!userVaults.find((uv) => uv.id === v.id)) {
+      addVault({ ...v, ...patch })
+    } else {
+      updateVault(v.id, patch)
+    }
+  }
 
   return (
     <div className="fade-in dashboard">
@@ -98,7 +129,7 @@ export default function DashboardPage() {
                   className="btn btn--ghost"
                   style={{ padding: "6px 12px", fontSize: 12 }}
                   title={v.status === "paused" ? "Resume" : "Pause"}
-                  onClick={(e) => e.preventDefault()}
+                  onClick={(e) => handlePause(e, v)}
                 >
                   <PauseIcon size={13} />{" "}
                   {v.status === "paused" ? "Resume" : "Pause"}
@@ -107,7 +138,7 @@ export default function DashboardPage() {
                   className="btn btn--ghost"
                   style={{ padding: "6px 12px", fontSize: 12 }}
                   title="Renew"
-                  onClick={(e) => e.preventDefault()}
+                  onClick={(e) => handleRenew(e, v)}
                 >
                   <RenewIcon size={13} /> Renew
                 </button>
