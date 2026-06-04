@@ -10,7 +10,14 @@ import {
 } from "viem"
 
 const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://aeneid.storyrpc.io"
-const STORY_API_URL = process.env.NEXT_PUBLIC_STORY_API_URL || "http://172.192.41.96:1317"
+
+function getStoryApiUrl() {
+  if (process.env.NEXT_PUBLIC_STORY_API_URL) return process.env.NEXT_PUBLIC_STORY_API_URL
+  if (typeof window !== "undefined" && window.location.protocol === "https:") {
+    return `${window.location.origin}/api/story-api`
+  }
+  return "http://172.192.41.96:1317"
+}
 
 export const CDR_CONTRACTS = {
   DKG: "0xCcCcCC0000000000000000000000000000000004" as const,
@@ -65,7 +72,7 @@ export function useCDRClient() {
         network: "testnet",
         publicClient,
         walletClient,
-        apiUrl: STORY_API_URL,
+        apiUrl: getStoryApiUrl(),
       })
 
       writeClientRef.current = client
