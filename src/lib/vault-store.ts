@@ -1,17 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback, useSyncExternalStore } from "react"
+import { useState, useEffect, useCallback } from "react"
 import type { Vault } from "@/types"
 
 const STORAGE_KEY = "ns-user-vaults"
 
-let listeners: (() => void)[] = []
-
-function emitChange() {
-  listeners.forEach((l) => l())
-}
-
-function getSnapshot(): Vault[] {
+function readVaults(): Vault[] {
   if (typeof window === "undefined") return []
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -21,32 +15,40 @@ function getSnapshot(): Vault[] {
   }
 }
 
-function getServerSnapshot(): Vault[] {
-  return []
-}
-
-function subscribe(listener: () => void) {
-  listeners.push(listener)
-  return () => {
-    listeners = listeners.filter((l) => l !== listener)
-  }
+function writeVaults(vaults: Vault[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(vaults))
+  // Notify other hook instances in the same page
+  window.dispatchEvent(new Event("ns-vaults-changed"))
 }
 
 export function useUserVaults() {
-  const vaults = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+  const [vaults, setVaults] = useState<Vault[]>([])
+
+  // Load from localStorage after mount (avoids SSR/hydration mismatch)
+  useEffect(() => {
+    setVaults(readVaults())
+
+    const onStorageChange = () => setVaults(readVaults())
+    window.addEventListener("ns-vaults-changed", onStorageChange)
+    window.addEventListener("storage", onStorageChange)
+    return () => {
+      window.removeEventListener("ns-vaults-changed", onStorageChange)
+      window.removeEventListener("storage", onStorageChange)
+    }
+  }, [])
 
   const addVault = useCallback((vault: Vault) => {
-    const current = getSnapshot()
+    const current = readVaults()
     const updated = [vault, ...current.filter((v) => v.id !== vault.id)]
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-    emitChange()
+    writeVaults(updated)
+    setVaults(updated)
   }, [])
 
   const removeVault = useCallback((id: string) => {
-    const current = getSnapshot()
+    const current = readVaults()
     const updated = current.filter((v) => v.id !== id)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-    emitChange()
+    writeVaults(updated)
+    setVaults(updated)
   }, [])
 
   return { vaults, addVault, removeVault }
